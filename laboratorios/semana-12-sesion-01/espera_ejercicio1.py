@@ -25,8 +25,6 @@ from reservas import CalendarioDeCancha, FranjaHoraria
 SEGUNDO_DE_LA_CANCELACION = 5500
 
 
-# ---------------------------------------------------------------- Parte A
-
 def simular_consultas(intervalo_segundos):
     calendario = CalendarioDeCancha("cancha-1", "2026-11-10")
     calendario.reservar("r-1", "ana", 18, 19)
