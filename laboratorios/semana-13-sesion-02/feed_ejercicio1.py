@@ -1,27 +1,3 @@
-"""Ejercicio 1: el feed de actividad, de dos formas.
-
-Cada estudiante sigue equipos y espacios. Su feed muestra las publicaciones
-mas recientes de lo que sigue. Las dos clases resuelven lo mismo con
-estrategias opuestas:
-
-- FeedEnEscritura (fan-out on write): al publicar, la publicacion se
-  copia al feed de cada seguidor. Leer el feed es leer una sola lista.
-- FeedEnLectura (fan-out on read): al publicar, la publicacion se guarda
-  una sola vez, en la lista del autor. Leer el feed es juntar las listas
-  de todo lo que se sigue.
-
-Las dos guardan todo en un Almacen (actividad.py), que cuenta escrituras
-y lecturas.
-
-Corre el archivo con:
-
-    python3 feed_ejercicio1.py
-
-y las pruebas con:
-
-    pytest test_feed_ejercicio1.py
-"""
-
 from actividad import Almacen, Publicacion, mas_recientes
 
 
@@ -37,14 +13,12 @@ class FeedEnEscritura:
             self.seguidores[autor].append(estudiante)
 
     def publicar(self, publicacion):
-        # TODO 1: agrega la publicacion a la lista "feed:<estudiante>" de cada
-        # seguidor del autor, con self.almacen.agregar.
-        raise NotImplementedError
+        for estudiante in self.seguidores.get(publicacion.autor, []):
+            self.almacen.agregar(f"feed:{estudiante}", publicacion)
 
     def leer(self, estudiante, cantidad=10):
-        # TODO 2: lee la lista "feed:<estudiante>" (una sola lectura) y devuelve
-        # las `cantidad` mas recientes, con mas_recientes.
-        raise NotImplementedError
+        publicaciones = self.almacen.leer(f"feed:{estudiante}")
+        return mas_recientes(publicaciones, cantidad)
 
 
 class FeedEnLectura:
@@ -59,14 +33,13 @@ class FeedEnLectura:
             self.seguidos[estudiante].append(autor)
 
     def publicar(self, publicacion):
-        # TODO 3: agrega la publicacion una sola vez, a la lista "autor:<autor>".
-        raise NotImplementedError
+        self.almacen.agregar(f"autor:{publicacion.autor}", publicacion)
 
     def leer(self, estudiante, cantidad=10):
-        # TODO 4: lee la lista "autor:<autor>" de cada autor que sigue el
-        # estudiante (una lectura por autor), juntalas y devuelve las
-        # `cantidad` mas recientes.
-        raise NotImplementedError
+        todas = []
+        for autor in self.seguidos.get(estudiante, []):
+            todas.extend(self.almacen.leer(f"autor:{autor}"))
+        return mas_recientes(todas, cantidad)
 
 
 def simular(feed):

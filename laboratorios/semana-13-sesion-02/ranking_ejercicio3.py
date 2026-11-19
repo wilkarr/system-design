@@ -38,4 +38,60 @@ Esta vez no hay codigo de partida. Corre las pruebas con:
 """
 
 from actividad import Publicacion
-# TODO: escribe aqui la clase OrdenadorDeFeed.
+
+
+class OrdenadorDeFeed:
+    def __init__(self, interacciones, equipos_de):
+        self.interacciones = interacciones
+        self.equipos_de = equipos_de
+
+    def puntaje(self, publicacion, estudiante, ahora):
+        cant_interacciones = self.interacciones.get(publicacion.id, 0)
+        equipos = self.equipos_de.get(estudiante, [])
+        multiplicador = 3 if publicacion.autor in equipos else 1
+        horas = (ahora - publicacion.momento) // 60
+        return ((cant_interacciones + 1) * multiplicador) / (1 + horas)
+
+    def ordenar(self, publicaciones, estudiante, ahora, cantidad):
+        ordenadas = sorted(
+            publicaciones,
+            key=lambda p: (
+                -self.puntaje(p, estudiante, ahora),
+                -p.momento,
+                p.id,
+            ),
+        )
+
+        pendientes = list(ordenadas)
+        resultado = []
+
+        while pendientes and len(resultado) < cantidad:
+            elegido_idx = 0
+            if (
+                len(resultado) >= 2
+                and resultado[-1].autor == resultado[-2].autor
+            ):
+                autor_bloqueado = resultado[-1].autor
+                for i, pub in enumerate(pendientes):
+                    if pub.autor != autor_bloqueado:
+                        elegido_idx = i
+                        break
+
+            resultado.append(pendientes.pop(elegido_idx))
+
+        return resultado
+
+    def espacios_mas_reservados(self, reservas, ahora, cantidad):
+        conteos = {}
+        limite_inferior = ahora - 10080
+
+        for espacio, momento in reservas:
+            if limite_inferior < momento <= ahora:
+                conteos[espacio] = conteos.get(espacio, 0) + 1
+
+        ordenados = sorted(
+            conteos.items(),
+            key=lambda item: (-item[1], item[0]),
+        )
+
+        return ordenados[:cantidad]
