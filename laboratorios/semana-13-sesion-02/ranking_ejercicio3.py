@@ -39,7 +39,6 @@ Esta vez no hay codigo de partida. Corre las pruebas con:
 
 from actividad import Publicacion
 
-
 class OrdenadorDeFeed:
     def __init__(self, interacciones, equipos_de):
         self.interacciones = interacciones
@@ -53,7 +52,7 @@ class OrdenadorDeFeed:
         return ((cant_interacciones + 1) * multiplicador) / (1 + horas)
 
     def ordenar(self, publicaciones, estudiante, ahora, cantidad):
-        ordenadas = sorted(
+        pendientes = sorted(
             publicaciones,
             key=lambda p: (
                 -self.puntaje(p, estudiante, ahora),
@@ -62,9 +61,7 @@ class OrdenadorDeFeed:
             ),
         )
 
-        pendientes = list(ordenadas)
         resultado = []
-
         while pendientes and len(resultado) < cantidad:
             elegido_idx = 0
             if (

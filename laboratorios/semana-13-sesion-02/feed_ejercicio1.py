@@ -1,3 +1,27 @@
+"""Ejercicio 1: el feed de actividad, de dos formas.
+
+Cada estudiante sigue equipos y espacios. Su feed muestra las publicaciones
+mas recientes de lo que sigue. Las dos clases resuelven lo mismo con
+estrategias opuestas:
+
+- FeedEnEscritura (fan-out on write): al publicar, la publicacion se
+  copia al feed de cada seguidor. Leer el feed es leer una sola lista.
+- FeedEnLectura (fan-out on read): al publicar, la publicacion se guarda
+  una sola vez, en la lista del autor. Leer el feed es juntar las listas
+  de todo lo que se sigue.
+
+Las dos guardan todo en un Almacen (actividad.py), que cuenta escrituras
+y lecturas.
+
+Corre el archivo con:
+
+    python3 feed_ejercicio1.py
+
+y las pruebas con:
+
+    pytest test_feed_ejercicio1.py
+"""
+
 from actividad import Almacen, Publicacion, mas_recientes
 
 
@@ -13,13 +37,11 @@ class FeedEnEscritura:
             self.seguidores[autor].append(estudiante)
 
     def publicar(self, publicacion):
-        for estudiante in self.seguidores.get(publicacion.autor, []):
-            self.almacen.agregar(f"feed:{estudiante}", publicacion)
+        for estudiantes in self.seguidores.get(publicacion.autor, []):
+            self.almacen.agregar(f"feed: {estudiantes}", publicacion)
 
     def leer(self, estudiante, cantidad=10):
-        publicaciones = self.almacen.leer(f"feed:{estudiante}")
-        return mas_recientes(publicaciones, cantidad)
-
+        return mas_recientes(self.almacen.leer(f"feed:{estudiante}"), 10)
 
 class FeedEnLectura:
     def __init__(self):
@@ -33,14 +55,14 @@ class FeedEnLectura:
             self.seguidos[estudiante].append(autor)
 
     def publicar(self, publicacion):
-        self.almacen.agregar(f"autor:{publicacion.autor}", publicacion)
+        self.almacen.agregar(f'autor: {publicacion.autor}', publicacion)
 
     def leer(self, estudiante, cantidad=10):
-        todas = []
-        for autor in self.seguidos.get(estudiante, []):
-            todas.extend(self.almacen.leer(f"autor:{autor}"))
-        return mas_recientes(todas, cantidad)
+        posts = []
+        for siguiendo in self.seguidos.get(estudiante, []):
+            posts = posts + self.almacen.leer(f"autor:{siguiendo}")
 
+        return mas_recientes(posts, cantidad)
 
 def simular(feed):
     for i in range(10):
