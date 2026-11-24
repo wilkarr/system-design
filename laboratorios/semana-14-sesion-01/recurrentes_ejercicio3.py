@@ -37,3 +37,40 @@ Corran las pruebas con:
 
     pytest test_recurrentes_ejercicio3.py
 """
+from datetime import date, timedelta
+from reservas import CalendarioDeCancha
+
+
+class AgendaDeCancha:
+    def __init__(self, cancha):
+        self._cancha = cancha
+        self._calendarios = {}  # fecha -> CalendarioDeCancha
+
+    def calendario(self, fecha):
+        if fecha not in self._calendarios:
+            self._calendarios[fecha] = CalendarioDeCancha(self._cancha, fecha)
+        return self._calendarios[fecha]
+
+    def reservar_cada_semana(self, id_base, estudiante, fecha_inicial, inicio, fin, semanas):
+        if not (1 <= semanas <= 12):
+            raise ValueError("semanas debe estar entre 1 y 12")
+
+        fecha_base = date.fromisoformat(fecha_inicial)
+        resultados = []
+
+        for indice in range(semanas):
+            fecha_actual = (fecha_base + timedelta(days=7 * indice)).isoformat()
+            id_reserva = f"{id_base}-{indice + 1}"
+            cal = self.calendario(fecha_actual)
+
+            try:
+                cal.reservar(id_reserva, estudiante, inicio, fin)
+                resultados.append((fecha_actual, "reservada"))
+            except ValueError as error:
+                mensaje = str(error).lower()
+                if "ocupad" in mensaje or "solap" in mensaje:
+                    resultados.append((fecha_actual, "ocupada"))
+                else:
+                    resultados.append((fecha_actual, "limite"))
+
+        return resultados
