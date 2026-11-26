@@ -40,7 +40,7 @@ class RepositorioSQLite:
 
     def borrar(self, id_reserva):
         self.conexion.execute(
-            "DELETE FROM reservas WHERE estudiante = (SELECT estudiante FROM reservas WHERE id = ?)",
+            "DELETE FROM reservas WHERE id = ?",
             (id_reserva,))
         self.conexion.commit()
 
